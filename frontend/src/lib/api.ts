@@ -6,8 +6,23 @@
  */
 import "server-only";
 
-const BASE_URL = process.env.API_BASE_URL ?? "http://localhost:8080";
-const API_KEY = process.env.API_KEY ?? "dev-local-key";
+const isProduction = process.env.NODE_ENV === "production";
+
+function readServerEnv(name: "API_BASE_URL" | "API_KEY", fallback?: string): string {
+  const value = process.env[name] ?? fallback;
+  if (value) return value;
+
+  // Fail fast in production instead of falling back to localhost.
+  throw new Error(
+    `Missing required server environment variable: ${name}. Set it in Vercel Project Settings -> Environment Variables.`,
+  );
+}
+
+const BASE_URL = readServerEnv(
+  "API_BASE_URL",
+  isProduction ? undefined : "http://localhost:8080",
+);
+const API_KEY = readServerEnv("API_KEY", isProduction ? undefined : "dev-local-key");
 
 type FetchOptions = RequestInit & { revalidate?: number };
 

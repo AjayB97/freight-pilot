@@ -143,24 +143,28 @@ Each tool maps 1:1 to an endpoint on the Freight Pilot API. Use
 should hold the key as a secret.
 
 ### `verify_carrier`
+
 - **HTTP:** `POST {{API_BASE}}/carriers/verify`
 - **Body:** `{ "mc_number": "<digits or 'MC 12345'>" }`
 - **Returns:** `{ eligible, reason, legal_name, dot_number, status, allowed_to_operate }`
 - **When to call:** exactly once, right after you have an MC number.
 
 ### `search_loads`
+
 - **HTTP:** `GET {{API_BASE}}/loads/search?origin=...&equipment_type=...&pickup_after=...`
 - **Returns:** up to 5 matching loads with full details.
 - **When to call:** after discovery. Widen filters on the second try only.
 
 ### `negotiate`
+
 - **HTTP:** `POST {{API_BASE}}/negotiate`
 - **Body:** `{ "load_id": "...", "carrier_offer": 2200, "round_number": 1, "mc_number": "...", "call_id": "{{call.id}}" }`
 - **Returns:** `{ decision: "accept"|"counter"|"reject", counter_offer, final_rate, reasoning, max_rounds, ... }`
 - **When to call:** every time the carrier names a number. Increment
-  `round_number` on each call.
+`round_number` on each call.
 
 ### `log_call`
+
 - **HTTP:** `POST {{API_BASE}}/calls`
 - **Body:** see schema below.
 - **When to call:** exactly once, right before ending the call.
@@ -197,17 +201,21 @@ should hold the key as a secret.
 These are the canonical values the dashboard expects. Use them verbatim.
 
 **Outcome**
-| Value | When |
-|---|---|
-| `booked` | Both sides agreed a rate and you transferred. |
-| `no_agreement` | You ran out of rounds or the carrier walked on price. |
-| `not_eligible` | FMCSA says the carrier is not authorized. |
-| `no_matching_load` | No load matched even after widening the search. |
+
+
+| Value              | When                                                                               |
+| ------------------ | ---------------------------------------------------------------------------------- |
+| `booked`           | Both sides agreed a rate and you transferred.                                      |
+| `no_agreement`     | You ran out of rounds or the carrier walked on price.                              |
+| `not_eligible`     | FMCSA says the carrier is not authorized.                                          |
+| `no_matching_load` | No load matched even after widening the search.                                    |
 | `carrier_declined` | Carrier didn't like the load itself (lane, timing, equipment) regardless of price. |
-| `escalated` | You transferred mid-call to a human rep for a reason other than booking. |
-| `abandoned` | Carrier hung up / connection dropped / call ended without a clear outcome. |
+| `escalated`        | You transferred mid-call to a human rep for a reason other than booking.           |
+| `abandoned`        | Carrier hung up / connection dropped / call ended without a clear outcome.         |
+
 
 **Sentiment**
+
 - `positive` — friendly, agreeable, fast rapport.
 - `neutral` — transactional, no strong signals either way (default).
 - `negative` — frustrated, complaining, mildly rude.
@@ -223,12 +231,12 @@ These are the canonical values the dashboard expects. Use them verbatim.
 Per the challenge, use the **web-call trigger** (not a phone number).
 
 1. In HappyRobot, create an inbound agent with the system prompt + call flow
-   above.
+  above.
 2. Add the four tools pointing to `{{API_BASE}}`:
-   - Local: `http://localhost:8080`
-   - Deployed: `https://<your-fly-app>.fly.dev`
+  - Local: `http://localhost:8080`
+  - Deployed: `https://<your-fly-app>.fly.dev`
 3. Store the API key as a secret (`API_KEY`) and reference it in each tool's
-   auth header.
+  auth header.
 4. Enable the **web call** trigger and copy the embeddable link for the demo.
 5. Run 3 test calls and confirm rows appear in the dashboard.
 
@@ -237,4 +245,5 @@ Per the challenge, use the **web-call trigger** (not a phone number).
 ## 6. Changelog
 
 - **v1.0** — Initial release. Rule-based negotiation (3 rounds, 15% ceiling,
-  92% floor). FMCSA gate. Canonical outcome/sentiment classifications.
+92% floor). FMCSA gate. Canonical outcome/sentiment classifications.
+

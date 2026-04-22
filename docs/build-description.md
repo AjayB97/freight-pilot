@@ -1,124 +1,205 @@
+
+---
+
+```markdown
 # Freight Pilot — Inbound Carrier Sales, v1
 
 *Prepared for Acme Logistics by the Freight Pilot team*
 
+---
+
 ## TL;DR
 
-Carriers call Acme's inbound line 24/7. Most of those calls come in after
-hours or during overlap, when the sales desk is maxed out. Freight Pilot
-picks up every call, runs the carrier through FMCSA, matches them to a live
-load, negotiates within policy, and either transfers a booking-ready call to
-a sales rep or logs why it didn't convert.
+Carriers call Acme's inbound line 24/7. Many of these calls occur after
+hours or during peak overlap, when the sales desk is saturated. Freight
+Pilot answers every call, verifies the carrier via FMCSA, matches them to
+a live load, negotiates within a defined pricing policy, and either
+transfers a booking-ready call to a sales rep or logs precisely why the
+call did not convert.
 
-Every call produces structured data — outcome, sentiment, rate, and
-negotiation history — which feeds a dashboard your sales lead uses to
-decide *what to do tomorrow*, not just *what happened yesterday*.
+Every interaction produces structured data — outcome, sentiment, rate, and
+negotiation history — which feeds a dashboard designed to answer:
+**“What should we do next?”**, not just **“What happened?”**.
+
+---
 
 ## Who it's for
 
-- **Acme's inbound sales desk** — fewer abandoned calls, no after-hours
-  gaps, and reps only get live-transferred calls that are already priced
-  and verified.
-- **Acme's sales lead / ops manager** — a real-time view of inbound
-  performance: revenue, margin vs loadboard, conversion by lane, and
-  recommended next actions.
+- **Inbound Sales Desk**
+  - Eliminates missed calls and after-hours gaps
+  - Only receives pre-qualified, price-aligned transfers
+- **Sales Lead / Ops Manager**
+  - Real-time visibility into revenue, margin, and conversion
+  - Clear recommendations on pricing and lane strategy
+
+---
 
 ## What it does today (v1)
 
-A single HappyRobot voice agent (*"Bree"*) handles every inbound call and
-does four things, in order:
+A single HappyRobot voice agent (*"Bree"*) handles inbound calls end-to-end:
 
-1. **Vet** the carrier. Grabs their MC number, verifies them against the
-   FMCSA QCMobile API, and refuses to book anyone whose authority is not
-   active. The reason is logged — no silent drops.
-2. **Match** them to a load. Asks one open question about current location
-   and equipment, then searches Acme's load board for the best fit (closest
-   pickup, then highest rate). Widens the search once before giving up.
-3. **Negotiate** — up to three rounds. Pricing is **deterministic and
-   policy-driven** server-side:
-   - **Floor:** 92% of loadboard rate (configurable). Never agree below.
-   - **Ceiling:** 115% of loadboard rate (configurable). Never agree above.
-   - **Sweet spot:** within 3% of loadboard → instant accept.
-   - **Above sweet spot, below ceiling:** meet-in-the-middle, accept on
-     final round.
-   - **Above ceiling:** counter at the ceiling, then reject on final round.
-   - **Below floor:** counter UP to the loadboard rate (don't leave money on
-     the table, but don't haggle hard).
+### 1. Vet the carrier
+- Collects MC number
+- Verifies via FMCSA QCMobile API
+- Rejects carriers without active authority
+- Logs rejection reason explicitly
 
-   Every round is logged with the reasoning — auditors / sales leads can
-   review *why* the agent made each call.
-4. **Close**. On agreement, Bree confirms the lane and rate, then says
-   "transferring you to a rep now" (mocked per Acme's request for v1; real
-   transfer is a one-line change). On no-agreement, Bree politely ends and
-   logs the outcome.
+---
 
-Throughout the call, Bree extracts structured fields (current location,
-desired pickup day, equipment preference, notes), classifies the outcome
-into one of seven buckets, and classifies sentiment into positive / neutral
-/ negative / frustrated.
+### 2. Match to a load
+- Asks for:
+  - current location
+  - equipment type
+- Searches load board:
+  - prioritizes proximity and rate
+- Expands search once before exiting
 
-## The dashboard — what your sales lead actually needs
+---
 
-The home page answers four questions in the top row:
+### 3. Negotiate (up to 3 rounds)
 
-- **How much revenue did the agent book?** (with the call count that produced it)
-- **What's our conversion rate?** (booked / total calls)
-- **Are we pricing correctly?** — average margin vs loadboard. Green if
-  close to 0%, red if we're booking below, amber if we're over-pricing.
-- **What did we leave on the table?** — sum of unbooked rates from
-  no-agreement / declined / abandoned calls.
+Pricing is **deterministic and policy-driven (server-side)**:
 
-Below that:
+- **Floor:** 92% of loadboard rate (configurable)
+- **Ceiling:** 115% of loadboard rate (configurable)
+- **Sweet spot:** within ±3% → instant accept
 
-- A "**What to do next**" panel of auto-generated recommendations (e.g.
-  *"Avg booked margin is +12% — you're leaving rate on the table; lower
-  the ceiling"*, *"Lane Dallas→Atlanta converts 67% — source more of
-  these"*).
-- A **conversion funnel** showing where calls drop off between ring and
-  book.
-- **Outcome distribution** and **carrier sentiment** bars.
-- **Top lanes** by call volume with conversion and margin per lane.
-- A feed of **recent calls**, each drillable into a page with the
-  summary, rates, rounds, extracted fields, and a link to the transcript.
+**Behavior:**
+- Above sweet spot → meet-in-the-middle
+- Above ceiling → counter at ceiling → reject final
+- Below floor → push up toward loadboard rate
+- Final round → forced resolution (accept or reject)
 
-Every number on the dashboard traces back to a specific agent action.
+All negotiation rounds are logged with reasoning for auditability.
+
+---
+
+### 4. Close
+
+- On agreement:
+  - Confirms load + rate
+  - Simulates transfer to rep (mocked in v1)
+- On failure:
+  - Ends call politely
+  - Logs outcome
+
+---
+
+### 5. Extract & classify
+
+Captured automatically:
+- Carrier preferences
+- Lane details
+- Negotiation history
+
+Classified into:
+- **Outcome** (7 categories: booked, no agreement, invalid carrier, etc.)
+- **Sentiment** (positive, neutral, negative, frustrated)
+
+---
+
+## The dashboard — decision layer
+
+Designed for **daily operational decisions**, not reporting.
+
+### Top-level metrics
+
+- **Revenue booked**
+- **Conversion rate**
+- **Margin vs loadboard**
+- **Missed revenue opportunity**
+
+---
+
+### Decision support
+
+- **“What to do next” panel**
+  - Dynamic recommendations:
+    - pricing adjustments
+    - lane prioritization
+- **Conversion funnel**
+  - identifies drop-off stages
+- **Outcome + sentiment breakdown**
+- **Top lanes**
+  - volume, conversion, margin
+- **Recent calls feed**
+  - drill-down into:
+    - negotiation rounds
+    - extracted fields
+    - transcript
+
+Every metric ties directly to agent actions.
+
+---
 
 ## How it integrates
 
-- The HappyRobot agent calls four HTTPS endpoints on the Freight Pilot
-  API: `/carriers/verify`, `/loads/search`, `/negotiate`, `/calls`.
-- All endpoints require an API key (header auth). HTTPS is handled at the
-  platform edge.
-- The same database the agent writes to is the one the dashboard reads
-  from — no ETL, no drift.
+- HappyRobot agent calls:
+  - `/carriers/verify`
+  - `/loads/search`
+  - `/negotiate`
+  - `/calls`
+- All endpoints:
+  - HTTPS
+  - API key protected
+- Single shared database:
+  - agent writes
+  - dashboard reads
+  - no ETL, no drift
 
-## What's explicitly *not* in v1 (and why)
+---
 
-- **Real transfer to a rep.** Mocked per Acme's instructions; v1.1 is a
-  one-line change once we have the rep's ring group.
-- **Learned pricing policy.** v1 is rule-based on purpose — we need
-  explainability for the first 90 days so sales leaders trust it. The
-  dashboard captures the ground truth we'd later use to train a policy.
-- **Multi-region / high availability.** v1 is one machine with a persistent
-  volume. Inbound volume doesn't justify more yet; we can move to Postgres
-  and multi-region at any time without code changes.
-- **CRM write-back.** We're capturing the structured data (MC, carrier
-  name, extracted lane prefs) but not pushing to a CRM yet. Integration
-  target for v1.1.
+## What’s not in v1 (by design)
 
-## What we need from Acme to go live
+- **Live call transfer**
+  - Mocked for now
+  - trivial to enable (1-line change)
 
-1. An FMCSA web key (5 minutes at mobile.fmcsa.dot.gov).
-2. Acme's ring group or phone number to transfer to.
-3. Sign-off on the **floor (92%)** and **ceiling (115%)** — these are the
-   two numbers that most directly affect revenue and margin.
-4. An hour with the sales lead to watch three real calls and tune the
-   pitch script.
+- **ML-based pricing**
+  - Rule-based for explainability
+  - groundwork captured for future training
 
-## Success metrics for the pilot
+- **High availability / multi-region**
+  - Single instance sufficient for pilot
+  - architecture is upgrade-ready (Postgres)
 
-- **North-star:** after-hours revenue booked per week.
-- **Guardrails:** avg margin within ±5% of loadboard, negative sentiment
-  rate below 15%, zero bookings with non-authorized carriers.
+- **CRM integration**
+  - structured data captured
+  - write-back deferred to v1.1
 
-All four are on the dashboard from day one.
+---
+
+## What we need from Acme
+
+1. FMCSA API key
+2. Sales rep transfer number / ring group
+3. Approval on pricing policy:
+   - Floor (92%)
+   - Ceiling (115%)
+4. 1-hour calibration session with sales lead
+
+---
+
+## Success metrics (pilot)
+
+- **North star**
+  - After-hours revenue booked per week
+
+- **Guardrails**
+  - Margin within ±5% of loadboard
+  - <15% negative sentiment
+  - 0 invalid carrier bookings
+
+All tracked live in the dashboard.
+
+---
+
+## Why this works
+
+- Captures **every inbound opportunity**
+- Standardizes **negotiation quality**
+- Produces **actionable data from day one**
+- Bridges gap between **AI automation and real ops decisions**
+
+Freight Pilot is not just handling calls —  
+it is building a **repeatable, measurable inbound sales engine** for Acme Logistics.
