@@ -1,0 +1,37 @@
+# Fly.io configuration for the Freight Pilot API.
+# Deploy with:  fly launch --no-deploy   (first time)
+#               fly volumes create freight_pilot_data --size 1 --region ord
+#               fly secrets set API_KEYS=... FMCSA_API_KEY=... CORS_ORIGINS=https://your-dashboard.vercel.app
+#               fly deploy
+
+app = "freight-pilot-api"         # change to your app name
+primary_region = "ord"
+
+[build]
+
+[env]
+  DATABASE_URL = "sqlite:////data/freight_pilot.db"
+  PORT = "8080"
+
+[[mounts]]
+  source = "freight_pilot_data"
+  destination = "/data"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+
+  [[http_service.checks]]
+    interval = "30s"
+    timeout = "5s"
+    grace_period = "10s"
+    method = "GET"
+    path = "/health"
+
+[[vm]]
+  cpu_kind = "shared"
+  cpus = 1
+  memory_mb = 512
