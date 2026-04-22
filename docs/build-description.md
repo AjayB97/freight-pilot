@@ -25,7 +25,7 @@ decide *what to do tomorrow*, not just *what happened yesterday*.
 
 ## What it does today (v1)
 
-A single HappyRobot voice agent (*"Riley"*) handles every inbound call and
+A single HappyRobot voice agent (*"Bree"*) handles every inbound call and
 does four things, in order:
 
 1. **Vet** the carrier. Grabs their MC number, verifies them against the
@@ -47,12 +47,12 @@ does four things, in order:
 
    Every round is logged with the reasoning — auditors / sales leads can
    review *why* the agent made each call.
-4. **Close**. On agreement, Riley confirms the lane and rate, then says
+4. **Close**. On agreement, Bree confirms the lane and rate, then says
    "transferring you to a rep now" (mocked per Acme's request for v1; real
-   transfer is a one-line change). On no-agreement, Riley politely ends and
+   transfer is a one-line change). On no-agreement, Bree politely ends and
    logs the outcome.
 
-Throughout the call, Riley extracts structured fields (current location,
+Throughout the call, Bree extracts structured fields (current location,
 desired pickup day, equipment preference, notes), classifies the outcome
 into one of seven buckets, and classifies sentiment into positive / neutral
 / negative / frustrated.
