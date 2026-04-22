@@ -1,0 +1,30 @@
+services:
+  api:
+    build: ./backend
+    image: freight-pilot-api:local
+    container_name: freight-pilot-api
+    ports:
+      - "8080:8080"
+    environment:
+      - API_KEYS=${API_KEYS:-dev-local-key}
+      - FMCSA_API_KEY=${FMCSA_API_KEY:-}
+      - DATABASE_URL=sqlite:////app/data/freight_pilot.db
+      - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:3000}
+    volumes:
+      - ./backend/data:/app/data
+    restart: unless-stopped
+
+  dashboard:
+    build:
+      context: ./frontend
+    image: freight-pilot-dashboard:local
+    container_name: freight-pilot-dashboard
+    ports:
+      - "3000:3000"
+    environment:
+      # Server-side env for Next.js (used in server components / route handlers)
+      - API_BASE_URL=http://api:8080
+      - API_KEY=${API_KEYS:-dev-local-key}
+    depends_on:
+      - api
+    restart: unless-stopped
