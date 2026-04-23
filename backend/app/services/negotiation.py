@@ -10,6 +10,13 @@ Policy (defaults, configurable via env):
   * floor           = loadboard_rate * negotiation_min_floor_pct          [e.g. 92%]
   * max_rounds      = 3
 
+Optional **broker_last_counter** (passed from the agent after each `counter`):
+  When the carrier lowers their ask across rounds, the naive midpoint
+  (loadboard + carrier_offer) / 2 **moves down** with them — which sounds
+  like the broker is backing off their own last number. If `broker_last_counter`
+  is set, any new `counter_offer` is floored at that value so the broker's
+  position is **weakly monotone** (never lower than what we already said).
+
 Decision rules per round:
   * If offer <= max_authorized and offer <= loadboard_rate * 1.03  -> accept.
   * If offer > max_authorized                                      -> counter
@@ -46,10 +53,21 @@ def _round_money(x: float) -> float:
     return round(x / 25) * 25  # Round to nearest $25 like real brokers do.
 
 
+def _floor_broker_counter(
+    computed: float,
+    broker_last_counter: float | None,
+) -> float:
+    """Never let a new broker counter sit below what we already said aloud."""
+    if broker_last_counter is None:
+        return computed
+    return max(computed, broker_last_counter)
+
+
 def evaluate_offer(
     loadboard_rate: float,
     carrier_offer: float,
     round_number: int,
+    broker_last_counter: float | None = None,
 ) -> NegotiationResult:
     s = get_settings()
     max_rounds = s.negotiation_max_rounds
@@ -80,7 +98,7 @@ def evaluate_offer(
     #    the loadboard rate (we don't leave money on the table but we also
     #    don't need to haggle hard).
     if carrier_offer < floor:
-        counter = _round_money(loadboard_rate)
+        counter = _floor_broker_counter(_round_money(loadboard_rate), broker_last_counter)
         if round_number >= max_rounds:
             return NegotiationResult(
                 decision="accept",
@@ -129,8 +147,12 @@ def evaluate_offer(
                 max_authorized=max_authorized,
                 floor=floor,
             )
-        # Meet in the middle, biased toward loadboard.
-        counter = _round_money((loadboard_rate + carrier_offer) / 2)
+        # Meet in the middle, biased toward loadboard — but never walk our own
+        # counter *down* if the carrier simply lowered their ask vs last round.
+        counter = _floor_broker_counter(
+            _round_money((loadboard_rate + carrier_offer) / 2),
+            broker_last_counter,
+        )
         return NegotiationResult(
             decision="counter",
             counter_offer=counter,
@@ -163,7 +185,7 @@ def evaluate_offer(
             floor=floor,
         )
 
-    counter = _round_money(max_authorized)
+    counter = _floor_broker_counter(_round_money(max_authorized), broker_last_counter)
     return NegotiationResult(
         decision="counter",
         counter_offer=counter,

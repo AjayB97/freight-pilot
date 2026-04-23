@@ -106,7 +106,10 @@ Vercel (dashboard) steps.
 - **Deterministic negotiation.** The LLM is great at conversation but bad at
   disciplined pricing. The `negotiate` endpoint is pure rule-based: floor,
   ceiling, sweet-spot, meet-in-the-middle, final-round rules. The agent only
-  *says* the numbers the server decides.
+  *says* the numbers the server decides. Pass **`broker_last_counter`** (the
+  previous `counter_offer` when the last turn was a counter) so the broker’s
+  number never **drops** when the carrier lowers their ask — naive midpoints
+  would otherwise move down each round.
 - **One system, one DB.** Every tool call the agent makes writes to the same
   SQLite file the dashboard reads. No ETL, no duplication.
 - **Business metrics over activity metrics.** The dashboard intentionally

@@ -51,6 +51,15 @@ class NegotiateRequest(BaseModel):
     round_number: int = Field(1, ge=1)
     mc_number: Optional[str] = None
     call_id: Optional[str] = Field(None, description="HappyRobot call id, for traceability")
+    broker_last_counter: Optional[float] = Field(
+        None,
+        ge=0,
+        description=(
+            "If the broker already named a counter in the previous round, pass it here "
+            "so the engine never suggests a *lower* broker number when the carrier walks "
+            "their ask down (split midpoint would otherwise drop)."
+        ),
+    )
 
 
 class NegotiateResponse(BaseModel):

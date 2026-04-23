@@ -20,6 +20,7 @@ def negotiate(payload: NegotiateRequest, db: Session = Depends(get_db)):
         loadboard_rate=load.loadboard_rate,
         carrier_offer=payload.carrier_offer,
         round_number=payload.round_number,
+        broker_last_counter=payload.broker_last_counter,
     )
 
     db.add(
