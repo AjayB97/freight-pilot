@@ -15,7 +15,7 @@ export const dynamic = "force-dynamic";
 function WindowTabs({ current }: { current: number }) {
   const windows = [7, 30, 90];
   return (
-    <div className="inline-flex rounded-2xl border border-primary/20 bg-white/80 p-1 text-sm shadow-sm backdrop-blur">
+    <div className="inline-flex rounded-2xl border border-primary/30 bg-card/80 p-1 text-sm shadow-lg shadow-black/20 backdrop-blur">
       {windows.map((w) => (
         <a
           key={w}
@@ -59,7 +59,7 @@ export default async function DashboardPage({
 
   return (
     <div className="space-y-8 pb-3">
-      <section className="overflow-hidden rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/[0.08] via-white to-cyan-50 shadow-sm">
+      <section className="overflow-hidden rounded-2xl border border-primary/25 bg-gradient-to-br from-primary/[0.18] via-card/90 to-violet-500/10 shadow-xl shadow-black/20">
         <div className="flex items-start justify-between gap-4 flex-wrap p-6 pb-4">
           <div>
             <h1 className="text-3xl font-semibold tracking-tight text-balance">Operations overview</h1>
@@ -69,15 +69,15 @@ export default async function DashboardPage({
           </div>
           <WindowTabs current={windowDays} />
         </div>
-        <div className="grid gap-3 border-t border-primary/10 bg-white/60 p-4 md:grid-cols-3">
-          <div className="rounded-xl border border-primary/15 bg-white/90 p-3">
+        <div className="grid gap-3 border-t border-primary/20 bg-background/40 p-4 md:grid-cols-3">
+          <div className="rounded-xl border border-primary/25 bg-card/85 p-3">
             <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
               <CalendarDays className="h-3.5 w-3.5" />
               Reporting window
             </div>
             <div className="mt-1 text-lg font-semibold">{windowDays} days</div>
           </div>
-          <div className="rounded-xl border border-primary/15 bg-white/90 p-3">
+          <div className="rounded-xl border border-primary/25 bg-card/85 p-3">
             <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
               <PhoneCall className="h-3.5 w-3.5" />
               Throughput
@@ -86,7 +86,7 @@ export default async function DashboardPage({
               {metrics.total_calls} calls <span className="text-muted-foreground">/ {metrics.booked_calls} booked</span>
             </div>
           </div>
-          <div className="rounded-xl border border-primary/15 bg-white/90 p-3">
+          <div className="rounded-xl border border-primary/25 bg-card/85 p-3">
             <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
               <TrendingUp className="h-3.5 w-3.5" />
               Avg rounds to book
@@ -104,7 +104,7 @@ export default async function DashboardPage({
           sublabel={`${metrics.booked_calls} of ${metrics.total_calls} calls booked`}
           tone="success"
           hint="Sum of final rates for calls with outcome = booked."
-          className="bg-gradient-to-br from-emerald-50 via-white to-emerald-100/80 border-emerald-200/80"
+          className="bg-gradient-to-br from-emerald-500/16 via-card/95 to-emerald-400/10 border-emerald-400/35"
           icon={CircleDollarSign}
         />
         <Stat
@@ -113,7 +113,7 @@ export default async function DashboardPage({
           sublabel={`${metrics.booked_calls} bookings / ${metrics.total_calls} calls`}
           tone={metrics.conversion_rate >= 0.4 ? "success" : "warning"}
           hint="Calls that ended in outcome = booked."
-          className="bg-gradient-to-br from-sky-50 via-white to-cyan-100/70 border-sky-200/80"
+          className="bg-gradient-to-br from-sky-500/18 via-card/95 to-cyan-400/12 border-sky-400/35"
           icon={TrendingUp}
         />
         <Stat
@@ -126,7 +126,7 @@ export default async function DashboardPage({
           sublabel={`Avg booked ${formatUSD(metrics.avg_final_rate)}`}
           tone={marginTone}
           hint="Where we're landing vs the listed rate. Close to 0% is ideal."
-          className="bg-gradient-to-br from-amber-50 via-white to-orange-100/70 border-amber-200/80"
+          className="bg-gradient-to-br from-amber-500/16 via-card/95 to-orange-400/10 border-amber-400/35"
           icon={TrendingUp}
         />
         <Stat
@@ -135,7 +135,7 @@ export default async function DashboardPage({
           sublabel="Unbooked rates from no_agreement / declined / abandoned"
           tone={metrics.lost_pipeline_value > metrics.booked_revenue ? "destructive" : "default"}
           hint="Recoverable if negotiation or matching improves."
-          className="bg-gradient-to-br from-rose-50 via-white to-rose-100/70 border-rose-200/80"
+          className="bg-gradient-to-br from-rose-500/16 via-card/95 to-red-400/10 border-rose-400/35"
           icon={CircleDollarSign}
         />
       </div>
@@ -162,7 +162,7 @@ export default async function DashboardPage({
 
       {/* Funnel + Outcomes + Sentiment */}
       <div className="grid gap-4 lg:grid-cols-3">
-        <Card className="lg:col-span-1 border-indigo-200/70 bg-gradient-to-br from-white via-white to-indigo-50/70 shadow-md shadow-indigo-100/40">
+        <Card className="lg:col-span-1 border-indigo-400/30 bg-gradient-to-br from-card/95 via-card/90 to-indigo-500/10 shadow-md shadow-indigo-950/40">
           <CardHeader>
             <CardTitle>Conversion funnel</CardTitle>
             <CardDescription>Where calls drop off between ring and book.</CardDescription>
@@ -171,7 +171,7 @@ export default async function DashboardPage({
             <Funnel points={metrics.funnel} />
           </CardContent>
         </Card>
-        <Card className="lg:col-span-1 border-emerald-200/70 bg-gradient-to-br from-white via-white to-emerald-50/70 shadow-md shadow-emerald-100/40">
+        <Card className="lg:col-span-1 border-emerald-400/30 bg-gradient-to-br from-card/95 via-card/90 to-emerald-500/10 shadow-md shadow-emerald-950/40">
           <CardHeader>
             <CardTitle>Call outcomes</CardTitle>
             <CardDescription>Distribution of how calls ended.</CardDescription>
@@ -180,7 +180,7 @@ export default async function DashboardPage({
             <OutcomesChart outcomes={metrics.outcomes} />
           </CardContent>
         </Card>
-        <Card className="lg:col-span-1 border-cyan-200/70 bg-gradient-to-br from-white via-white to-cyan-50/70 shadow-md shadow-cyan-100/40">
+        <Card className="lg:col-span-1 border-cyan-400/30 bg-gradient-to-br from-card/95 via-card/90 to-cyan-500/10 shadow-md shadow-cyan-950/40">
           <CardHeader>
             <CardTitle>Carrier sentiment</CardTitle>
             <CardDescription>
@@ -194,7 +194,7 @@ export default async function DashboardPage({
       </div>
 
       {/* Lanes */}
-      <Card className="border-violet-200/70 bg-gradient-to-br from-white via-white to-violet-50/60 shadow-md shadow-violet-100/40">
+      <Card className="border-violet-400/30 bg-gradient-to-br from-card/95 via-card/90 to-violet-500/10 shadow-md shadow-violet-950/40">
         <CardHeader>
           <CardTitle>Top lanes by volume</CardTitle>
           <CardDescription>
@@ -221,7 +221,7 @@ export default async function DashboardPage({
             ))}
           </div>
         ) : (
-          <div className="rounded-xl border border-primary/20 bg-gradient-to-br from-primary/5 via-white to-cyan-50 p-8 text-center text-sm text-muted-foreground">
+          <div className="rounded-xl border border-primary/30 bg-gradient-to-br from-primary/20 via-card/90 to-cyan-500/10 p-8 text-center text-sm text-muted-foreground">
             No calls recorded yet. Once the HappyRobot agent wraps a call, it will POST to
             <code className="mx-1">/calls</code> and rows will appear here.
           </div>

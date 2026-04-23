@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Truck } from "lucide-react";
+import { Inter } from "next/font/google";
 import "./globals.css";
+
+const inter = Inter({ subsets: ["latin"], display: "swap" });
 
 export const metadata: Metadata = {
   title: "Freight Pilot — Inbound Carrier Sales",
@@ -13,8 +16,8 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
-      <body className="min-h-screen">
-        <header className="sticky top-0 z-30 border-b border-primary/10 bg-white/70 backdrop-blur-xl">
+      <body className={`${inter.className} min-h-screen`}>
+        <header className="sticky top-0 z-30 border-b border-primary/20 bg-background/70 backdrop-blur-xl">
           <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
             <Link href="/" className="flex items-center gap-2">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-indigo-500 text-primary-foreground shadow-sm">
@@ -26,18 +29,18 @@ export default function RootLayout({
               </div>
             </Link>
             <nav className="flex items-center gap-5 text-sm">
-              <Link href="/" className="text-muted-foreground hover:text-foreground">
+              <Link href="/" className="text-muted-foreground transition hover:text-foreground">
                 Overview
               </Link>
-              <Link href="/calls" className="text-muted-foreground hover:text-foreground">
+              <Link href="/calls" className="text-muted-foreground transition hover:text-foreground">
                 Calls
               </Link>
-              <Link href="/loads" className="text-muted-foreground hover:text-foreground">
+              <Link href="/loads" className="text-muted-foreground transition hover:text-foreground">
                 Loads
               </Link>
               <Link
                 href="/negotiations"
-                className="text-muted-foreground hover:text-foreground"
+                className="text-muted-foreground transition hover:text-foreground"
               >
                 Negotiations
               </Link>
@@ -45,7 +48,7 @@ export default function RootLayout({
           </div>
         </header>
         <main className="mx-auto max-w-7xl px-6 py-8">{children}</main>
-        <footer className="border-t border-primary/10 mt-12">
+        <footer className="mt-12 border-t border-primary/20">
           <div className="mx-auto max-w-7xl px-6 py-6 text-xs text-muted-foreground flex justify-between">
             <div>Freight Pilot · Built for Acme Logistics</div>
             <div>
