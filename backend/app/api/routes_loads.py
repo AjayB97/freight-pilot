@@ -14,9 +14,10 @@ router = APIRouter(prefix="/loads", tags=["loads"])
 
 
 def _ilike(column, needle: str):
-    # SQLite's LIKE is case-insensitive for ASCII by default. We lower() both
-    # sides to be explicit and portable.
-    return func.lower(column).like(f"%{needle.lower()}%")
+    # Force case-insensitive matching regardless of DB defaults/collation.
+    # Also normalize extra whitespace in user input.
+    normalized = " ".join(needle.split()).lower()
+    return func.lower(column).like(f"%{normalized}%")
 
 
 @router.get("/search", response_model=list[LoadOut], dependencies=[Depends(require_api_key)])

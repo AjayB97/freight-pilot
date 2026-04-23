@@ -21,7 +21,7 @@ export function Stat({
   const toneCls = {
     default: "text-foreground",
     success: "text-success",
-    warning: "text-warning-foreground",
+    warning: "text-warning",
     destructive: "text-destructive",
   }[tone];
 
