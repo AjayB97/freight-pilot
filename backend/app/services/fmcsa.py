@@ -18,10 +18,6 @@ from app.core.config import get_settings
 
 logger = logging.getLogger(__name__)
 
-# Temporary test allowlist for end-to-end HappyRobot demos.
-# Remove before production handoff.
-TEST_ELIGIBLE_MCS = {"12345", "3456"}
-
 
 @dataclass
 class CarrierLookupResult:
@@ -50,19 +46,6 @@ async def lookup_mc(mc_number: str) -> CarrierLookupResult:
             mc_number=mc_number,
             eligible=False,
             reason="Invalid MC number format.",
-        )
-
-    if digits in TEST_ELIGIBLE_MCS:
-        return CarrierLookupResult(
-            mc_number=digits,
-            eligible=True,
-            reason="Carrier is authorized to operate.",
-            legal_name=f"Test Carrier MC {digits}",
-            dba_name=f"Test Carrier {digits}",
-            dot_number=f"TST{digits}",
-            status="A",
-            allowed_to_operate=True,
-            raw={"source": "test-allowlist"},
         )
 
     if not settings.fmcsa_api_key:
