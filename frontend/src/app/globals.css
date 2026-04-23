@@ -50,5 +50,9 @@
 
   html, body {
     @apply bg-background text-foreground antialiased;
+    background-image:
+      radial-gradient(circle at 10% -10%, hsl(224 90% 66% / 0.14), transparent 40%),
+      radial-gradient(circle at 90% 0%, hsl(188 88% 55% / 0.1), transparent 35%);
+    background-attachment: fixed;
   }
 }

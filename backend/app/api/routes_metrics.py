@@ -44,14 +44,16 @@ def summary(
     conversion = (booked_count / total) if total else 0.0
 
     booked_revenue = sum((c.final_rate or 0) for c in booked)
+    booked_final_rates = [c.final_rate for c in booked if c.final_rate is not None]
+    booked_loadboard_rates = [c.loadboard_rate for c in booked if c.loadboard_rate is not None]
     avg_final = (
-        sum(c.final_rate for c in booked if c.final_rate) / booked_count
-        if booked_count
+        sum(booked_final_rates) / len(booked_final_rates)
+        if booked_final_rates
         else None
     )
     avg_loadboard = (
-        sum(c.loadboard_rate for c in booked if c.loadboard_rate) / booked_count
-        if booked_count
+        sum(booked_loadboard_rates) / len(booked_loadboard_rates)
+        if booked_loadboard_rates
         else None
     )
     avg_margin_pct = None
@@ -63,11 +65,8 @@ def summary(
         if margins:
             avg_margin_pct = sum(margins) / len(margins)
 
-    avg_rounds_to_book = (
-        sum(c.rounds for c in booked if c.rounds) / booked_count
-        if booked_count and any(c.rounds for c in booked)
-        else None
-    )
+    booked_rounds = [c.rounds for c in booked if c.rounds is not None]
+    avg_rounds_to_book = (sum(booked_rounds) / len(booked_rounds)) if booked_rounds else None
 
     lost_pipeline_value = sum(
         (c.loadboard_rate or 0)
