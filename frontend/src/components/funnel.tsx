@@ -5,10 +5,14 @@ export function Funnel({ points }: { points: FunnelPoint[] }) {
   return (
     <div className="space-y-3">
       {points.map((p, i) => {
-        const width = Math.max((p.count / max) * 100, 4);
         const previous = i > 0 ? points[i - 1].count : null;
-        const dropOff =
-          previous && previous > 0 ? 1 - p.count / previous : null;
+        const dropCount = previous !== null ? Math.max(previous - p.count, 0) : 0;
+        const dropOff = previous && previous > 0 ? dropCount / previous : null;
+        const retainedWidth = (p.count / max) * 100;
+        const previousWidth = previous !== null ? (previous / max) * 100 : retainedWidth;
+        const dropWidth = Math.max(previousWidth - retainedWidth, 0);
+        const retainedMinWidthClass = p.count > 0 ? "min-w-[3px]" : "";
+        const dropMinWidthClass = dropCount > 0 ? "min-w-[3px]" : "";
         return (
           <div key={p.stage} className="">
             <div className="flex items-baseline justify-between mb-1.5">
@@ -22,12 +26,25 @@ export function Funnel({ points }: { points: FunnelPoint[] }) {
                 ) : null}
               </div>
             </div>
-            <div className="h-8 w-full rounded-md bg-muted overflow-hidden">
+            <div className="h-8 w-full rounded-md bg-muted overflow-hidden relative">
               <div
-                className="h-full rounded-md bg-primary/85 transition-[width] duration-300"
-                style={{ width: `${width}%` }}
+                className={`absolute inset-y-0 left-0 bg-primary/85 transition-[width] duration-300 ${
+                  i === 0 ? "rounded-md" : "rounded-l-md"
+                } ${retainedMinWidthClass}`}
+                style={{ width: `${retainedWidth}%` }}
               />
+              {i > 0 && dropWidth > 0 ? (
+                <div
+                  className={`absolute inset-y-0 rounded-r-md bg-destructive/70 transition-[width,left] duration-300 ${dropMinWidthClass}`}
+                  style={{ left: `${retainedWidth}%`, width: `${dropWidth}%` }}
+                />
+              ) : null}
             </div>
+            {i > 0 && dropCount > 0 ? (
+              <div className="mt-1 text-xs text-destructive/90">
+                Dropped {dropCount.toLocaleString()} from previous stage
+              </div>
+            ) : null}
           </div>
         );
       })}

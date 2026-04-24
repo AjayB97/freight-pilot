@@ -182,6 +182,16 @@ def summary(
                 f"Conversion is {conversion * 100:.0f}%. Review the top 'no_agreement' calls — "
                 "prompting or floor/ceiling may be off."
             )
+        if eligible >= 5 and pitched / eligible < 0.6:
+            recs.append(
+                f"Only {pitched / eligible * 100:.0f}% of eligible calls got matched to a load. "
+                "Matching coverage looks thin; widen search radius or prioritise easier-fit freight."
+            )
+        if pitched >= 5 and booked_count / pitched < 0.35:
+            recs.append(
+                f"Only {booked_count / pitched * 100:.0f}% of pitched calls convert to booked. "
+                "Tighten negotiation playbooks on the first counter."
+            )
         if avg_margin_pct is not None and avg_margin_pct > 0.10:
             recs.append(
                 f"Avg booked margin is +{avg_margin_pct * 100:.1f}% above loadboard. "
@@ -207,12 +217,31 @@ def summary(
                 f"{stale_loads} loads on the board haven't had a single pitch this window. "
                 "Re-post or offer them first on the next matching call."
             )
+        if avg_rounds_to_book is not None and avg_rounds_to_book > 2.5:
+            recs.append(
+                f"Booked calls average {avg_rounds_to_book:.1f} rounds to close. "
+                "Use a stronger first counter to reduce call length and drop-off."
+            )
+        abandoned_count = outcomes_map.get("abandoned").count if "abandoned" in outcomes_map else 0
+        if total >= 10 and abandoned_count / total > 0.15:
+            recs.append(
+                f"{abandoned_count / total * 100:.0f}% of calls end abandoned. "
+                "Check hold times and opening script friction before rate discussion."
+            )
         # Lane-level recommendation
         best_lane = max(top_lanes, key=lambda l: l.conversion, default=None)
         if best_lane and best_lane.calls >= 3 and best_lane.conversion > 0.5:
             recs.append(
                 f"Lane {best_lane.origin} → {best_lane.destination} ({best_lane.equipment_type}) "
                 f"converts {best_lane.conversion * 100:.0f}%. Source more of these and prioritise them in the pitch."
+            )
+        weak_lane_candidates = [l for l in top_lanes if l.calls >= 3]
+        weakest_lane = min(weak_lane_candidates, key=lambda l: l.conversion, default=None)
+        if weakest_lane and weakest_lane.conversion < 0.2:
+            recs.append(
+                f"Lane {weakest_lane.origin} → {weakest_lane.destination} "
+                f"({weakest_lane.equipment_type}) converts only {weakest_lane.conversion * 100:.0f}% "
+                "across meaningful volume. De-prioritise it or revise lane-specific pricing."
             )
 
     return MetricsSummary(

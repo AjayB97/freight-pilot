@@ -13,6 +13,11 @@ from app.db.session import get_db
 router = APIRouter(prefix="/loads", tags=["loads"])
 
 
+def _today_utc_midnight() -> datetime:
+    # DB stores naive datetimes; keep filtering UTC-naive.
+    return datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
+
+
 def _ilike(column, needle: str):
     # Force case-insensitive matching regardless of DB defaults/collation.
     # Also normalize extra whitespace in user input.
@@ -43,8 +48,7 @@ def search_loads(
         stmt = stmt.where(_ilike(Load.destination, destination))
     if equipment_type:
         stmt = stmt.where(_ilike(Load.equipment_type, equipment_type))
-    if pickup_after:
-        stmt = stmt.where(Load.pickup_datetime >= pickup_after)
+    stmt = stmt.where(Load.pickup_datetime >= (pickup_after or _today_utc_midnight()))
     if pickup_before:
         stmt = stmt.where(Load.pickup_datetime <= pickup_before)
     if min_rate is not None:
@@ -71,7 +75,7 @@ def list_loads(
     db: Session = Depends(get_db),
 ):
     """Used by the dashboard (not the agent)."""
-    stmt = select(Load)
+    stmt = select(Load).where(Load.pickup_datetime >= _today_utc_midnight())
     if status:
         stmt = stmt.where(Load.status == status)
     if q:
