@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -25,6 +25,27 @@ def _ilike(column, needle: str):
     return func.lower(column).like(f"%{normalized}%")
 
 
+def _parse_limit(raw: Optional[str], default: int, minimum: int, maximum: int) -> int:
+    if raw is None:
+        return default
+    value = raw.strip()
+    if value == "":
+        return default
+    try:
+        parsed = int(value)
+    except ValueError:
+        return default
+    return max(minimum, min(maximum, parsed))
+
+
+def _normalize_utc_naive(value: Optional[datetime]) -> Optional[datetime]:
+    if value is None:
+        return None
+    if value.tzinfo is not None:
+        return value.astimezone(timezone.utc).replace(tzinfo=None)
+    return value
+
+
 @router.get("/search", response_model=list[LoadOut], dependencies=[Depends(require_api_key)])
 def search_loads(
     origin: Optional[str] = Query(None, description="City, state, or substring"),
@@ -33,7 +54,7 @@ def search_loads(
     pickup_after: Optional[datetime] = Query(None),
     pickup_before: Optional[datetime] = Query(None),
     min_rate: Optional[float] = Query(None, ge=0),
-    limit: int = Query(5, ge=1, le=20),
+    limit: Optional[str] = Query(None, description="Optional max rows (1-20); empty falls back to default."),
     db: Session = Depends(get_db),
 ):
     """Carrier-style search. Designed to be called by the HappyRobot agent
@@ -48,13 +69,18 @@ def search_loads(
         stmt = stmt.where(_ilike(Load.destination, destination))
     if equipment_type:
         stmt = stmt.where(_ilike(Load.equipment_type, equipment_type))
-    stmt = stmt.where(Load.pickup_datetime >= (pickup_after or _today_utc_midnight()))
-    if pickup_before:
-        stmt = stmt.where(Load.pickup_datetime <= pickup_before)
+    today = _today_utc_midnight()
+    requested_pickup_after = _normalize_utc_naive(pickup_after)
+    effective_pickup_after = requested_pickup_after if requested_pickup_after and requested_pickup_after >= today else today
+    stmt = stmt.where(Load.pickup_datetime >= effective_pickup_after)
+    requested_pickup_before = _normalize_utc_naive(pickup_before)
+    if requested_pickup_before:
+        stmt = stmt.where(Load.pickup_datetime <= requested_pickup_before)
     if min_rate is not None:
         stmt = stmt.where(Load.loadboard_rate >= min_rate)
 
-    stmt = stmt.order_by(Load.pickup_datetime.asc()).limit(limit)
+    parsed_limit = _parse_limit(limit, default=5, minimum=1, maximum=20)
+    stmt = stmt.order_by(Load.pickup_datetime.asc()).limit(parsed_limit)
     rows = db.execute(stmt).scalars().all()
     return rows
 

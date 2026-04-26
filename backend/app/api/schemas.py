@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Any, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 
 # ---------- Carriers ----------
@@ -100,6 +100,13 @@ class CallCreate(BaseModel):
     extracted: Optional[dict[str, Any]] = None
     started_at: Optional[datetime] = None
     ended_at: Optional[datetime] = None
+
+    @field_validator("loadboard_rate", "initial_offer", "final_rate", "rounds", mode="before")
+    @classmethod
+    def empty_numeric_to_none(cls, value: Any) -> Any:
+        if isinstance(value, str) and value.strip() == "":
+            return None
+        return value
 
 
 class CallOut(BaseModel):

@@ -36,11 +36,19 @@ def create_call(payload: CallCreate, db: Session = Depends(get_db)):
     if sentiment and sentiment not in ALLOWED_SENTIMENTS:
         sentiment = "neutral"
 
+    load = db.get(Load, payload.load_id) if payload.load_id else None
+
+    # If booked without an explicit final_rate, treat posted/loadboard rate as final.
+    final_rate = payload.final_rate
+    if outcome == "booked" and final_rate is None:
+        if payload.loadboard_rate is not None:
+            final_rate = payload.loadboard_rate
+        elif load is not None:
+            final_rate = load.loadboard_rate
+
     # If load_id is provided and matches, mark it booked when the call is booked.
-    if payload.load_id and outcome == "booked":
-        load = db.get(Load, payload.load_id)
-        if load and load.status == "available":
-            load.status = "booked"
+    if load and outcome == "booked" and load.status == "available":
+        load.status = "booked"
 
     call = Call(
         external_call_id=payload.external_call_id,
@@ -51,7 +59,7 @@ def create_call(payload: CallCreate, db: Session = Depends(get_db)):
         sentiment=sentiment,
         loadboard_rate=payload.loadboard_rate,
         initial_offer=payload.initial_offer,
-        final_rate=payload.final_rate,
+        final_rate=final_rate,
         rounds=payload.rounds,
         summary=payload.summary,
         transcript_url=payload.transcript_url,
