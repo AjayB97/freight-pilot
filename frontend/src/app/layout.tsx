@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Truck } from "lucide-react";
 import { Inter } from "next/font/google";
+import { TopNav } from "@/components/top-nav";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], display: "swap" });
@@ -28,23 +29,7 @@ export default function RootLayout({
                 <div className="text-xs text-muted-foreground">Inbound Carrier Sales</div>
               </div>
             </Link>
-            <nav className="flex items-center gap-5 text-sm">
-              <Link href="/" className="text-muted-foreground transition hover:text-foreground">
-                Overview
-              </Link>
-              <Link href="/calls" className="text-muted-foreground transition hover:text-foreground">
-                Calls
-              </Link>
-              <Link href="/loads" className="text-muted-foreground transition hover:text-foreground">
-                Loads
-              </Link>
-              <Link
-                href="/negotiations"
-                className="text-muted-foreground transition hover:text-foreground"
-              >
-                Negotiations
-              </Link>
-            </nav>
+            <TopNav />
           </div>
         </header>
         <main className="mx-auto max-w-7xl px-6 py-8">{children}</main>
