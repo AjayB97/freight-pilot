@@ -89,18 +89,18 @@ If you prefer the Git integration:
 ### Verifying the end-to-end flow
 
 ```bash
-curl -H "X-API-Key: <YOUR_KEY>" https://freight-pilot-api.fly.dev/metrics/summary
+curl -H "Authorization: Bearer <YOUR_KEY>" https://freight-pilot-api.fly.dev/metrics/summary
 ```
 
 Then open `https://<your-project>.vercel.app` — the dashboard should load with
-the seeded data and zero calls.
+the seeded demo dataset (loads, sample calls, and negotiation rounds).
 
 ---
 
 ## 3. Point the HappyRobot agent at it
 
 In the HappyRobot UI, set the tool base URL to `https://freight-pilot-api.fly.dev`
-and add `X-API-Key: <YOUR_KEY>` as a header on every tool. See
+and add `Authorization: Bearer <YOUR_KEY>` as a header on every tool. See
 `docs/agent/happyrobot-workflow.md` for tool definitions.
 
 ---
@@ -112,3 +112,14 @@ that ship to Fly/Vercel, on the same ports, backed by a host-mounted
 `backend/data/` directory for the SQLite file. If something breaks in prod
 you can almost always reproduce it locally by copying the Fly secrets into
 `backend/.env`.
+
+---
+
+## 5. Region guidance for SQLite
+
+This API uses SQLite on a Fly volume. For deterministic behavior, run the API
+in a single region and keep the machine in the same region as the attached
+volume (for this repo, `ord` in `backend/fly.toml`).
+
+If multiple regions are enabled, each region can diverge because SQLite volume
+state is region-local.
