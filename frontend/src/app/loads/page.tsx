@@ -1,6 +1,6 @@
 import { api } from "@/lib/api";
 import { Badge } from "@/components/ui/badge";
-import { formatDateTime, formatUSD } from "@/lib/utils";
+import { formatDate, formatUSD } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -36,7 +36,7 @@ export default async function LoadsPage() {
                 </td>
                 <td className="px-4 py-3 text-muted-foreground">{l.equipment_type}</td>
                 <td className="px-4 py-3 text-muted-foreground">
-                  {formatDateTime(l.pickup_datetime)}
+                  {formatDate(l.pickup_datetime)}
                 </td>
                 <td className="px-4 py-3 text-right tabular-nums text-muted-foreground">
                   {l.miles ? l.miles.toLocaleString() : "—"}

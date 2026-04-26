@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime
 from typing import Any, Optional
 
 from pydantic import BaseModel, Field, field_validator
@@ -27,8 +27,8 @@ class LoadOut(BaseModel):
     load_id: str
     origin: str
     destination: str
-    pickup_datetime: datetime
-    delivery_datetime: datetime
+    pickup_datetime: date
+    delivery_datetime: date
     equipment_type: str
     loadboard_rate: float
     notes: Optional[str] = None

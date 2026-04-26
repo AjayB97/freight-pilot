@@ -33,3 +33,11 @@ export function formatDateTime(iso?: string | null): string {
     timeStyle: "short",
   });
 }
+
+export function formatDate(iso?: string | null): string {
+  if (!iso) return "—";
+  const d = new Date(iso);
+  return d.toLocaleDateString("en-US", {
+    dateStyle: "medium",
+  });
+}

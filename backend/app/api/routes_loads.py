@@ -58,6 +58,25 @@ def _normalize_utc_naive(value: Optional[datetime]) -> Optional[datetime]:
     return value
 
 
+def _serialize_load(load: Load) -> dict:
+    return {
+        "load_id": load.load_id,
+        "origin": load.origin,
+        "destination": load.destination,
+        "pickup_datetime": load.pickup_datetime.date().isoformat(),
+        "delivery_datetime": load.delivery_datetime.date().isoformat(),
+        "equipment_type": load.equipment_type,
+        "loadboard_rate": load.loadboard_rate,
+        "notes": load.notes,
+        "weight": load.weight,
+        "commodity_type": load.commodity_type,
+        "num_of_pieces": load.num_of_pieces,
+        "miles": load.miles,
+        "dimensions": load.dimensions,
+        "status": load.status,
+    }
+
+
 @router.get("/search", response_model=list[LoadOut], dependencies=[Depends(require_api_key)])
 def search_loads(
     origin: Optional[str] = Query(None, description="City, state, or substring"),
@@ -94,7 +113,7 @@ def search_loads(
     parsed_limit = _parse_limit(limit, default=5, minimum=1, maximum=20)
     stmt = stmt.order_by(Load.pickup_datetime.asc()).limit(parsed_limit)
     rows = db.execute(stmt).scalars().all()
-    return rows
+    return [_serialize_load(r) for r in rows]
 
 
 @router.get("/{load_id}", response_model=LoadOut, dependencies=[Depends(require_api_key)])
@@ -102,7 +121,7 @@ def get_load(load_id: str, db: Session = Depends(get_db)):
     load = db.get(Load, load_id)
     if not load:
         raise HTTPException(status_code=404, detail="Load not found")
-    return load
+    return _serialize_load(load)
 
 
 @router.get("", response_model=list[LoadOut], dependencies=[Depends(require_api_key)])
@@ -126,4 +145,5 @@ def list_loads(
             )
         )
     stmt = stmt.order_by(Load.pickup_datetime.asc()).limit(limit)
-    return db.execute(stmt).scalars().all()
+    rows = db.execute(stmt).scalars().all()
+    return [_serialize_load(r) for r in rows]
