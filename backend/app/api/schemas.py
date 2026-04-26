@@ -101,9 +101,17 @@ class CallCreate(BaseModel):
     started_at: Optional[datetime] = None
     ended_at: Optional[datetime] = None
 
-    @field_validator("loadboard_rate", "initial_offer", "final_rate", "rounds", mode="before")
+    @field_validator(
+        "loadboard_rate",
+        "initial_offer",
+        "final_rate",
+        "rounds",
+        "started_at",
+        "ended_at",
+        mode="before",
+    )
     @classmethod
-    def empty_numeric_to_none(cls, value: Any) -> Any:
+    def empty_fields_to_none(cls, value: Any) -> Any:
         if isinstance(value, str) and value.strip() == "":
             return None
         return value
