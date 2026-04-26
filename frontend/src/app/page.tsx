@@ -64,7 +64,7 @@ export default async function DashboardPage({
           <div>
             <h1 className="text-3xl font-semibold tracking-tight text-balance">Operations overview</h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              How the inbound carrier agent is performing against revenue, conversion and margin.
+              Revenue, conversion, and margin performance for inbound carrier sales.
             </p>
           </div>
           <WindowTabs current={windowDays} />
@@ -144,7 +144,7 @@ export default async function DashboardPage({
         <div>
           <h2 className="text-lg font-semibold tracking-tight">Diagnostics</h2>
           <p className="text-sm text-muted-foreground">
-            Drill into where calls are dropping, how they end, and which lanes are performing best.
+            Funnel, outcomes, sentiment, and lane performance.
           </p>
         </div>
       </div>
@@ -165,7 +165,7 @@ export default async function DashboardPage({
         <Card className="lg:col-span-1 border-indigo-400/30 bg-gradient-to-br from-card/95 via-card/90 to-indigo-500/10 shadow-md shadow-indigo-950/40">
           <CardHeader>
             <CardTitle>Conversion funnel</CardTitle>
-            <CardDescription>Where calls drop off between ring and book.</CardDescription>
+            <CardDescription>Stage-by-stage call progression.</CardDescription>
           </CardHeader>
           <CardContent>
             <Funnel points={metrics.funnel} />
@@ -174,7 +174,7 @@ export default async function DashboardPage({
         <Card className="lg:col-span-1 border-emerald-400/30 bg-gradient-to-br from-card/95 via-card/90 to-emerald-500/10 shadow-md shadow-emerald-950/40">
           <CardHeader>
             <CardTitle>Call outcomes</CardTitle>
-            <CardDescription>Distribution of how calls ended.</CardDescription>
+            <CardDescription>Outcome mix across the selected window.</CardDescription>
           </CardHeader>
           <CardContent>
             <OutcomesChart outcomes={metrics.outcomes} />
@@ -198,7 +198,7 @@ export default async function DashboardPage({
         <CardHeader>
           <CardTitle>Top lanes by volume</CardTitle>
           <CardDescription>
-            Conversion and margin per lane. Double down on green, investigate red.
+            Conversion and margin by lane.
           </CardDescription>
         </CardHeader>
         <CardContent>
