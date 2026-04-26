@@ -61,6 +61,13 @@ class NegotiateRequest(BaseModel):
         ),
     )
 
+    @field_validator("broker_last_counter", mode="before")
+    @classmethod
+    def empty_broker_last_counter_to_none(cls, value: Any) -> Any:
+        if isinstance(value, str) and value.strip() == "":
+            return None
+        return value
+
 
 class NegotiateResponse(BaseModel):
     decision: str  # accept | counter | reject
