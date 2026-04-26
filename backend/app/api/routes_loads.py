@@ -38,6 +38,18 @@ def _parse_limit(raw: Optional[str], default: int, minimum: int, maximum: int) -
     return max(minimum, min(maximum, parsed))
 
 
+def _parse_datetime_param(raw: Optional[str]) -> Optional[datetime]:
+    if raw is None:
+        return None
+    value = raw.strip()
+    if value == "":
+        return None
+    try:
+        return datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+
+
 def _normalize_utc_naive(value: Optional[datetime]) -> Optional[datetime]:
     if value is None:
         return None
@@ -51,8 +63,8 @@ def search_loads(
     origin: Optional[str] = Query(None, description="City, state, or substring"),
     destination: Optional[str] = Query(None),
     equipment_type: Optional[str] = Query(None, description="e.g. 'Dry Van', 'Reefer', 'Flatbed'"),
-    pickup_after: Optional[datetime] = Query(None),
-    pickup_before: Optional[datetime] = Query(None),
+    pickup_after: Optional[str] = Query(None),
+    pickup_before: Optional[str] = Query(None),
     min_rate: Optional[float] = Query(None, ge=0),
     limit: Optional[str] = Query(None, description="Optional max rows (1-20); empty falls back to default."),
     db: Session = Depends(get_db),
@@ -70,10 +82,10 @@ def search_loads(
     if equipment_type:
         stmt = stmt.where(_ilike(Load.equipment_type, equipment_type))
     today = _today_utc_midnight()
-    requested_pickup_after = _normalize_utc_naive(pickup_after)
+    requested_pickup_after = _normalize_utc_naive(_parse_datetime_param(pickup_after))
     effective_pickup_after = requested_pickup_after if requested_pickup_after and requested_pickup_after >= today else today
     stmt = stmt.where(Load.pickup_datetime >= effective_pickup_after)
-    requested_pickup_before = _normalize_utc_naive(pickup_before)
+    requested_pickup_before = _normalize_utc_naive(_parse_datetime_param(pickup_before))
     if requested_pickup_before:
         stmt = stmt.where(Load.pickup_datetime <= requested_pickup_before)
     if min_rate is not None:
